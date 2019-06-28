@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean class="redis.clients.jedis.JedisPoolConfig" id="poolConfig">
+        <property name="maxTotal" value="100"/>
+        <property name="maxIdle" value="100"/>
+        <property name="minIdle" value="10"/>
+        <property name="maxWaitMillis" value="1000"/>
+        <property name="blockWhenExhausted" value="true"/>
+        <property name="testOnBorrow" value="false"/>
+        <property name="testOnReturn" value="false"/>
+        <property name="testOnCreate" value="false"/>
+    </bean>
+
+    <!--    usePoll=false Jedis直连， true 连接池-->
+    <bean class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory" id="jedisConnectionFactory"
+          p:usePool="true" p:poolConfig-ref="poolConfig" p:hostName="192.168.152.129" p:port="6379" p:password="123456"
+          p:database="0">
+        <!--<property name="usePool" value="true"/>
+        <property name="hostName" value="192.168.152.129"/>-->
+    </bean>
+
+    <!--redisTemplate本质就是jedis的封装，在jedis基础上进行了大幅度的简化，并且对连接池友好，允许自动回收连接-->
+    <bean class="org.springframework.data.redis.core.RedisTemplate" id="redisTemplate">
+        <property name="connectionFactory" ref="jedisConnectionFactory"/>
+        <property name="keySerializer" ref="stringRedisSerializer"/>
+        <property name="valueSerializer" ref="genericJackson2JsonRedisSerializer"/>
+        <property name="hashKeySerializer" ref="stringRedisSerializer"/>
+        <property name="hashValueSerializer" ref="genericJackson2JsonRedisSerializer"/>
+    </bean>
+
+    <!--序列化原文保存-->
+    <bean class="org.springframework.data.redis.serializer.StringRedisSerializer" id="stringRedisSerializer"/>
+
+    <!--json 序列化-->
+    <bean class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer" id="genericJackson2JsonRedisSerializer"/>
+</beans>
